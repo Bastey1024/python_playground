@@ -38,17 +38,24 @@ def check_ressources(name):
 def process_coins(name):
     money_inserted = 0
     refund = 0
+    global refill
+    refill=0
     print(f"Please insert {float(menu.MENU[name]['cost'])} $")
     for i in menu.currency:
-        k = int(input(f"How many {i} (worth {menu.currency[i]}$) you insert?"))
-        money_inserted += (k * menu.currency[i])
+        try:
+          k = int(input(f"How many {i} (worth {menu.currency[i]}$) you insert?"))
+          money_inserted += (k * menu.currency[i])
+        except:
+          print("Please only insert a number of coins")
+          pass
     if money_inserted > menu.MENU[name]['cost']:
         refund = money_inserted - menu.MENU[name]['cost']
         menu.resources["money"] += menu.MENU[name]['cost']
-        print(f"Thank you, here is your {refund}$")
+        print(f"Thank you, here is your Change {round(refund,2)}$")
     elif money_inserted < menu.MENU[name]['cost']:
         print(f"Not enough money, please give enough money ( {menu.MENU[name]['cost']} $ )")
         print(f"Here is your money {money_inserted} $")
+        refill=1
 
 
 def make(name):
@@ -58,25 +65,44 @@ def make(name):
     print(f"Here is your tasty {name}, i wish you a nice day")
 
 
-def user_choice(user_wants):
-    if user_wants == "off":
-        turn_off()
-    elif user_wants == "report":
-        give_report()
+def maintenance_function():
+  print (art.maintenance)
+  global maintenance
+  maintenance = 1
 
-    elif user_wants not in menu.MENU:
-        print(f"Sorry we dont have {user_wants}, we only have {', '.join([i for i in menu.MENU.keys()]).title()}")
-    else:
-        user_wants = user_wants.lower()
-        check_ressources(user_wants)
-        if refill == 0:
-            process_coins(user_wants)
-            make(user_wants)
-        else:
-            print("Please call maintenance for refilling the automat")
+
+def user_choice(user_wants):
+    user_wants=user_wants.lower().strip()
+    try:
+      if user_wants == "maintenance":
+        maintenance_function()
+      elif maintenance == 1:
+        if user_wants == "off":
+          turn_off()
+        elif user_wants == "report":
+          give_report()
+        elif user_wants == "refill":
+          refill_automat()
+          give_report()
+      elif user_wants not in menu.MENU:
+          print(f"Sorry we dont have {user_wants}, we only have {', '.join([i for i in menu.MENU.keys()]).title()}")
+      else:
+          user_wants = user_wants.lower().strip()
+          check_ressources(user_wants)
+          if refill == 0:
+              process_coins(user_wants)
+              if refill == 0:
+                make(user_wants)
+              else:
+                user_choice(input("What do you want?"))
+          else:
+              print("Please call maintenance for refilling the automat")
+    except:
+      pass
 
 
 on = "on"
 refill = 0
+maintenance = 0
 while on == "on":
     user_choice(input("What do you want?"))
